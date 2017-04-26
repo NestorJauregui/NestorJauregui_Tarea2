@@ -12,7 +12,7 @@
 #define L 1.0 
 #define time 0.2379915616352639
 
-#define n_dis 501
+#define n_dis 5001
 
 void init_array( double *U, double *UB,double *UA);
 void calc_F( double *U, double *F);
