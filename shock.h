@@ -9,7 +9,17 @@
 #define U5 0.0
 #define x0 0.5
 #define L 1.0 
+#define time 0.2379915616352639
 
 #define n_dis 501
+
+void init_array( double *U, double *UB,double *UA);
+void calc_F( double *U, double *F);
+void calc_star(double *U,double *UB,double *F,double *FB, double dt, double dx);
+void calc_UA(double *UA,double *UB,double *FB);
+double calc_umax(double *U);
+void lax(double *U, double *F,double *UA,double *UB, double *FB, double dx, double dt);
+void calc_var(double *U, double *rho, double *u, double *P);
+int matrix(int fila, int columna);
 
 
