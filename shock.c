@@ -6,25 +6,27 @@
 
 int main(){
 
- double dx = L/n_dis;
- double dt = 1E-5;
- int i;
- double rhoff;
- double Pff;
- double uff;
- int iter;
+  double dx = L/((float)(n_dis)-1);
+  double dt = dx/3.0;
+  int i;
+  double rhoff;
+  double Pff;
+  double uff;
+  int iter;
 
- double *rho = malloc(n_dis*sizeof(double));
- double *P = malloc(n_dis*sizeof(double));
- double *u = malloc(n_dis*sizeof(double));
+  double *rho = malloc(n_dis*sizeof(double));
+  double *P = malloc(n_dis*sizeof(double));
+  double *u = malloc(n_dis*sizeof(double));
+  double *c = malloc(n_dis*sizeof(double));
 
- double *U = malloc((n_dis*3.0)*sizeof(double));
- double *UB = malloc((n_dis*3.0)*sizeof(double));
- double *UA = malloc((n_dis*3.0)*sizeof(double));
 
- double *F = malloc((n_dis*3.0)*sizeof(double));
- double *FB = malloc((n_dis*3.0)*sizeof(double));
- double *FA = malloc((n_dis*3.0)*sizeof(double));
+  double *U = malloc((n_dis*3.0)*sizeof(double));
+  double *UB = malloc((n_dis*3.0)*sizeof(double));
+  double *UA = malloc((n_dis*3.0)*sizeof(double));
+
+  double *F = malloc((n_dis*3.0)*sizeof(double));
+  double *FB = malloc((n_dis*3.0)*sizeof(double));
+  double *FA = malloc((n_dis*3.0)*sizeof(double));
 
 
  init_array(U,UB,UA);
@@ -55,8 +57,8 @@ return 0;
 
 /*inicializo la matriz U y sus asociadas*/
 void init_array( double *U, double *UB,double *UA){
-	int i;
-	int j;
+  int i;
+  int j;
   
   for(i=0; i<n_dis; i++){
     if(i<=(n_dis-1)/2){
@@ -94,7 +96,7 @@ void calc_F( double *U, double *F){
   for(i=0; i<n_dis ; i++){
     
     F[matrix(0,i)] = U[matrix(1,i)];
-    F[matrix(1,i)] = pow(U[matrix(1,i)],2)/U[matrix(0,i)] + (GAMMA-1) * (U[matrix(2,i)] -0.5* pow(U[matrix(1,i)],2)/U[matrix(0,i)]);
+    F[matrix(1,i)] =( pow(U[matrix(1,i)],2.0)/U[matrix(0,i)] ) + (GAMMA-1) * (U[matrix(2,i)] - 0.5* pow(U[matrix(1,i)],2.0)/U[matrix(0,i)]);
     F[matrix(2,i)] = (U[matrix(1,i)] / U[matrix(0,i)]) *( U[matrix(2,i)] + (GAMMA-1) * (U[matrix(2,i)] - 0.5 * pow(U[matrix(1,i)],2)/U[matrix(0,i)]) ) ;
     
   }
@@ -104,14 +106,14 @@ void calc_F( double *U, double *F){
 /*Calcula u estrella en el algoritmo de Lax W. y me genera f estrella tambien*/
 void calc_star(double *U,double *UB,double *F,double *FB, double dt, double dx)
 {
-	int i;
-	int j;
-	for(i=0;i<n_dis-1;i++){
-  	  for(j=0;j<3;j++){
-      	UB[matrix(j,i)] = U[matrix(j,i)]- (dt/dx) * ( F[matrix(j,i+1)]-F[matrix(j,i)]);
-	    }
-	  }
-	calc_F(UB,FB);  
+  int i;
+  int j;
+  for(i=0;i<n_dis-1;i++){
+    for(j=0;j<3;j++){
+      UB[matrix(j,i)] = (U[matrix(j,i)]+U[matrix(j,i+1)] - (dt/dx) * ( F[matrix(j,i+1)]-F[matrix(j,i)]))/2.0;
+    }
+  }
+  calc_F(UB,FB);  
 }
 
 /*calcula el avance temporal de U y actualiza U* a U*/
@@ -125,7 +127,7 @@ void calc_UA(double *U, double *UA, double *UB, double *FB, double dt, double dx
     {
       for(j=0;j<3;j++)
 	{
-      	UA[matrix(j,i)] = 0.5 * (U[matrix(j,i)] + UB[matrix(j,i)] -(dt/dx)*(FB[matrix(j,i)]-FB[matrix(j ,i-1)]));
+	  UA[matrix(j,i)] = U[matrix(j,i)] -(dt/dx)*(FB[matrix(j,i)]-FB[matrix(j ,i-1)]);
 	}
     }
 
@@ -139,46 +141,65 @@ void calc_UA(double *U, double *UA, double *UB, double *FB, double dt, double dx
 }
 
 /*calcula la velocidad maxima en un tiempo fijo*/
-double calc_umax(double *U)
+double calc_umax(double *U,double *c)
 {
-	int i;
-	double temp=0;
-	double umax=0;
-	for ( i = 0; i < n_dis; i++)
+  int i;
+  double temp=0.0;
+  double temp2=0.0;
+  double umax=0.0;
+  for ( i = 0; i < n_dis; i++)
+    {
+      temp = U[matrix(1,i)]/U[matrix(0,i)];
+      temp2 = c[i];
+      if (temp+temp2 > umax)
 	{
-		temp = U[matrix(1,i)]/U[matrix(0,i)];
-		if (temp > umax)
-		{
-			umax = temp;
-		}
+	  umax = temp+temp2;
 	}
-	return umax;
+    }
+  return umax;
+}
+
+/*calculala velocidad del sonido en cada punto*/
+
+void *s_speed(double *U, double *c){
+  
+  double rh;
+  double pres;
+  int i;
+  for(i=0; i<n_dis; i++ ){
+    
+    rh = U[matrix(0,i)];
+    pres = (GAMMA-1) * (U[matrix(2,i)] - 0.5* pow(U[matrix(1,i)],2.0)/U[matrix(0,i)]) ;
+
+    c[i] = pow(GAMMA * pres/rh ,0.5);
+
+  }
+
 }
 
 
 /*algoritmo Lax Wendroff*/
 
-int lax(double *U, double *F,double *UA,double *UB, double *FB, double dt, double dx)
+void lax(double *U, double *F,double *UA,double *UB, double *FB, double *c, double dt, double dx)
 {
-  
-  int k=0;
-  double t = 0;
+
+  double t = 0.0;
   while(t<time){ 
 
     calc_F(U,F);
+
+    printf(" %f  %f  %f   %f  %f  %f  %f  %f  %f  %f  %f \n",  F[matrix(0,245)], F[matrix(0,355)], F[matrix(0,465)], F[matrix(1,135)], F[matrix(1,245)], F[matrix(1,465)], F[matrix(2,135)], F[matrix(2,245)], F[matrix(2,355)], calc_umax(U), t);
+
     calc_star(U,UB,F,FB,dt,dx);
     calc_UA(U,UA,UB,FB,dt,dx);
-
-    if(calc_umax(U)>0){
-      dt = 0.5*dx/calc_umax(U);
+    s_speed(U,c);
+    if(calc_umax(U,c) > 0.0){
+      dt = 0.5*dx/calc_umax(U,c);
     }
     t = t + dt;
-    k++;
-
-    printf("%f \n", t);
 
   }
-  return k;
+
 }
 
 /*calcula las variables finales*/
