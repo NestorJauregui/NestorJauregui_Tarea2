@@ -1,3 +1,4 @@
+
 #define GAMMA  1.4
 
 #define rho1 1.0
@@ -16,9 +17,9 @@
 void init_array( double *U, double *UB,double *UA);
 void calc_F( double *U, double *F);
 void calc_star(double *U,double *UB,double *F,double *FB, double dt, double dx);
-void calc_UA(double *UA,double *UB,double *FB);
+void calc_UA(double *U, double *UA,double *UB,double *FB, double dt, double dx);
 double calc_umax(double *U);
-void lax(double *U, double *F,double *UA,double *UB, double *FB, double dx, double dt);
+int lax(double *U, double *F,double *UA,double *UB, double *FB, double dt, double dx);
 void calc_var(double *U, double *rho, double *u, double *P);
 int matrix(int fila, int columna);
 
