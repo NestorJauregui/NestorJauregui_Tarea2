@@ -31,7 +31,7 @@ int main(){
 
  init_array(U,UB,UA);
 
- lax(U,F,UA,UB,FB,dt,dx);
+ lax(U,F,UA,UB,FB,c,dt,dx);
 
  calc_var(U,rho,u,P);
 
@@ -187,17 +187,14 @@ void lax(double *U, double *F,double *UA,double *UB, double *FB, double *c, doub
   while(t<time){ 
 
     calc_F(U,F);
-
-    printf(" %f  %f  %f   %f  %f  %f  %f  %f  %f  %f  %f \n",  F[matrix(0,245)], F[matrix(0,355)], F[matrix(0,465)], F[matrix(1,135)], F[matrix(1,245)], F[matrix(1,465)], F[matrix(2,135)], F[matrix(2,245)], F[matrix(2,355)], calc_umax(U), t);
-
     calc_star(U,UB,F,FB,dt,dx);
     calc_UA(U,UA,UB,FB,dt,dx);
     s_speed(U,c);
     if(calc_umax(U,c) > 0.0){
       dt = 0.5*dx/calc_umax(U,c);
     }
+    printf(" %f  %f  %f   %f  %f  %f  %f  %f  %f  %f  %f \n",  F[matrix(0,245)], F[matrix(0,355)], F[matrix(0,465)], F[matrix(1,135)], F[matrix(1,245)], F[matrix(1,465)], F[matrix(2,135)], F[matrix(2,245)], F[matrix(2,355)], calc_umax(U,c), t);
     t = t + dt;
-
   }
 
 }

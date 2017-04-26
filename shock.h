@@ -19,7 +19,7 @@ void calc_F( double *U, double *F);
 void calc_star(double *U,double *UB,double *F,double *FB, double dt, double dx);
 void calc_UA(double *U, double *UA,double *UB,double *FB, double dt, double dx);
 double calc_umax(double *U, double *c);
-int lax(double *U, double *F,double *UA,double *UB, double *FB, double *c, double dt, double dx);
+void lax(double *U, double *F,double *UA,double *UB, double *FB, double *c, double dt, double dx);
 void calc_var(double *U, double *rho, double *u, double *P);
 int matrix(int fila, int columna);
 
